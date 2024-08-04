@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: deps
+      run: | 
+             sudo apt-get install gcc-12 \
+                                  flex \
+                                  bison \
+                                  linux-headers-$(uname -r)
+    - name: make
+      run: make
