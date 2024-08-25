@@ -18,7 +18,7 @@ static struct hid_device_id device_table[] = {
 MODULE_DEVICE_TABLE(hid, device_table);
 
 static int probe(struct hid_device *hdev, const struct hid_device_id *id) {
-  printk("winwing_ufc1_devdrv - Probed\n");
+  printk("winwing_ufc1_devdrv: probed\n");
   return 0;
 }
 
