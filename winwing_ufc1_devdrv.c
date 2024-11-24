@@ -27,10 +27,17 @@ static int probe(struct hid_device *hdev, const struct hid_device_id *id) {
     return ret;
   }
 
-  ret = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
+  ret = hid_hw_start(hdev, HID_CONNECT_HIDRAW);
 
   if (ret) {
     printk(KERN_ERR "winwing_ufc1_devdrv: hw start failed");
+    return ret;
+  }
+
+  ret = hid_hw_open(hdev);
+  if (ret) {
+    printk(KERN_ERR "winwing_ufc1_devdrv: hw open failed");
+    hid_hw_stop(hdev);
     return ret;
   }
 
@@ -38,23 +45,31 @@ static int probe(struct hid_device *hdev, const struct hid_device_id *id) {
 }
 
 static void remove(struct hid_device *hdev) {
+  hid_hw_close(hdev);
   hid_hw_stop(hdev);
 }
 
-static int input_configured(struct hid_device *hdev, struct hid_input *hidinput) {
-  return 0;
-}
+/* static int input_configured(struct hid_device *hdev, struct hid_input *hidinput) { */
+/*   return 0; */
+/* } */
 
 static int raw_event(struct hid_device *hdev,
                      struct hid_report *report,
                      u8 *raw_data,
                      int size) {
-  printk(KERN_IFNO "winwing_ufc1_devdrv: [debug] raw_event, size %d", size);
+  printk("winwing_ufc1_devdrv: [debug] raw_event");
   struct input_dev *data = hid_get_drvdata(hdev);
 
-  if (!data) {
-    return -EINVAL;
+  /* if (!data) { */
+  /*   return -EINVAL; */
+  /* } */
+
+  printk(KERN_INFO "winwing_ufc1_devdrv: data:");
+
+  for (int i = 0; i < size && i < 16; i++) {
+    printk(KERN_CONT " %02x", raw_data[i]);
   }
+  printk(KERN_CONT "\n");
 
   return 0;
 }
@@ -64,7 +79,7 @@ static struct hid_driver ww_ufc1_driver = {
   .id_table = device_table,
   .probe = probe,
   .remove = remove,
-  .input_configured = input_configured,
+  //  .input_configured = input_configured,
   .raw_event = raw_event
 };
 
