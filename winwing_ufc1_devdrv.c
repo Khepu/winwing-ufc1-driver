@@ -18,15 +18,44 @@ static struct hid_device_id device_table[] = {
 MODULE_DEVICE_TABLE(hid, device_table);
 
 static int probe(struct hid_device *hdev, const struct hid_device_id *id) {
-  printk("winwing_ufc1_devdrv: probed\n");
+  printk(KERN_INFO "winwing_ufc1_devdrv: probed\n");
+
+  int ret = hid_parse(hdev);
+
+  if (ret) {
+    printk(KERN_ERR "winwing_ufc1_devdrv: parse failed");
+    return ret;
+  }
+
+  ret = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
+
+  if (ret) {
+    printk(KERN_ERR "winwing_ufc1_devdrv: hw start failed");
+    return ret;
+  }
+
   return 0;
+}
+
+static void remove(struct hid_device *hdev) {
+  hid_hw_stop(hdev);
 }
 
 static int input_configured(struct hid_device *hdev, struct hid_input *hidinput) {
   return 0;
 }
 
-static int raw_event(struct hid_device *hdev, struct hid_report *report, u8 *raw_data, int size) {
+static int raw_event(struct hid_device *hdev,
+                     struct hid_report *report,
+                     u8 *raw_data,
+                     int size) {
+  printk(KERN_IFNO "winwing_ufc1_devdrv: [debug] raw_event, size %d", size);
+  struct input_dev *data = hid_get_drvdata(hdev);
+
+  if (!data) {
+    return -EINVAL;
+  }
+
   return 0;
 }
 
@@ -34,6 +63,7 @@ static struct hid_driver ww_ufc1_driver = {
   .name = "winwing_ufc1_devdrv",
   .id_table = device_table,
   .probe = probe,
+  .remove = remove,
   .input_configured = input_configured,
   .raw_event = raw_event
 };
